@@ -5,7 +5,7 @@ name: Daily content
 #   Settings -> Secrets and variables -> Actions.
 on:
   schedule:
-    - cron: "0 6 * * *"   # 06:00 UTC daily
+    - cron: "30 6 * * *"   # 06:30 UTC = 10:00 Asia/Tehran (UTC+3:30, no DST) daily
   workflow_dispatch: {}
 
 permissions:
