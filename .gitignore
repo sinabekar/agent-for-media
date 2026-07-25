@@ -1,0 +1,15 @@
+# Secrets / local config
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Generated content is committed by CI on its own branch; ignore locally by
+# default so ad-hoc runs don't clutter your working tree. Remove these two lines
+# if you prefer to track output/ and state/ in your own workflow.
+/output/
+/state/

@@ -1,0 +1,57 @@
+name: Daily content
+
+# Runs the pipeline every 24h and again on demand. Provide ANTHROPIC_API_KEY
+# (and optionally X_BEARER_TOKEN) as repository secrets:
+#   Settings -> Secrets and variables -> Actions.
+on:
+  schedule:
+    - cron: "0 6 * * *"   # 06:00 UTC daily
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-content
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate content
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+        run: python -m omatekk --once
+
+      - name: Commit outputs
+        run: |
+          git config user.name "omatekk-content-bot"
+          git config user.email "bot@users.noreply.github.com"
+          # output/ and state/ are gitignored for local runs; force-add here.
+          git add -f output state
+          if git diff --cached --quiet; then
+            echo "Nothing new to commit."
+          else
+            git commit -m "content: $(date -u +%F)"
+            git push
+          fi
+
+      - name: Upload as artifact (fallback / review)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-${{ github.run_id }}
+          path: output/
+          if-no-files-found: ignore
