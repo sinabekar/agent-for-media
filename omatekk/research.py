@@ -14,7 +14,7 @@ from __future__ import annotations
 import logging
 
 from .config import Config
-from .llm import LLM, _text
+from .llm import LLM, _anthropic_text
 from .models import Cluster
 
 log = logging.getLogger(__name__)
@@ -62,6 +62,6 @@ the facts and their sources."""
         log.warning("research step failed (%s); continuing without notes", exc)
         return ""
 
-    notes = _text(message).strip() if message else ""
+    notes = _anthropic_text(message).strip() if message else ""
     log.info("research produced %d chars of notes", len(notes))
     return notes
