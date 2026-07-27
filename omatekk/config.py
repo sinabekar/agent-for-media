@@ -13,7 +13,10 @@ from dataclasses import dataclass, field
 
 
 def _get(name: str, default: str) -> str:
-    return os.environ.get(name, default).strip()
+    val = os.environ.get(name)
+    if val is None or val.strip() == "":
+        return default
+    return val.strip()
 
 
 def _get_bool(name: str, default: bool) -> bool:
@@ -102,7 +105,16 @@ class Config:
 
     x_bearer_token: str = field(default_factory=lambda: _get("X_BEARER_TOKEN", ""))
 
-    # --- Models -----------------------------------------------------------
+    # --- LLM provider -----------------------------------------------------
+    # "anthropic" -> native Claude API (uses ANTHROPIC_API_KEY).
+    # "openai"    -> any OpenAI-compatible endpoint (OpenAI, OpenRouter,
+    #               avalai.ir, etc.) via OPENAI_API_KEY + OPENAI_BASE_URL.
+    llm_provider: str = field(default_factory=lambda: _get("LLM_PROVIDER", "openai").lower())
+    openai_api_key: str = field(default_factory=lambda: _get("OPENAI_API_KEY", ""))
+    openai_base_url: str = field(default_factory=lambda: _get("OPENAI_BASE_URL", "https://api.avalai.ir/v1"))
+    openai_model: str = field(default_factory=lambda: _get("OPENAI_MODEL", "gpt-4o-mini"))
+
+    # --- Models (used as-is in anthropic mode; overridden in openai mode) --
     # The writer produces the actual deliverables; flagship quality matters here.
     writer_model: str = field(default_factory=lambda: _get("WRITER_MODEL", "claude-opus-5"))
     # The analysis model does cheap mechanical work (ranking, SEO metadata).
@@ -110,6 +122,14 @@ class Config:
     writer_effort: str = field(default_factory=lambda: _get("WRITER_EFFORT", "high"))
 
     enable_research: bool = field(default_factory=lambda: _get_bool("ENABLE_RESEARCH", True))
+
+    def __post_init__(self):
+        # In OpenAI-compatible mode a single model serves both roles, and the
+        # Anthropic-only web_search research step is not available.
+        if self.llm_provider == "openai":
+            self.writer_model = self.openai_model
+            self.analysis_model = self.openai_model
+            self.enable_research = False
 
     # --- Persistence ------------------------------------------------------
     output_dir: str = field(default_factory=lambda: _get("OUTPUT_DIR", "output"))
@@ -129,8 +149,14 @@ class Config:
             ]
             if on
         ]
+        if self.llm_provider == "openai":
+            model_desc = f"provider=openai model={self.openai_model} base_url={self.openai_base_url}"
+        else:
+            model_desc = (
+                f"provider=anthropic writer={self.writer_model} (effort={self.writer_effort}) "
+                f"analysis={self.analysis_model}"
+            )
         return (
-            f"sources={enabled} | writer={self.writer_model} (effort={self.writer_effort}) "
-            f"| analysis={self.analysis_model} | research={self.enable_research} "
+            f"sources={enabled} | {model_desc} | research={self.enable_research} "
             f"| window={self.hours_back}h | lang={self.output_language}"
         )

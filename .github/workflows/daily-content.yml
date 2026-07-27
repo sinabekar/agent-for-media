@@ -31,6 +31,14 @@ jobs:
 
       - name: Generate content
         env:
+          # OpenAI-compatible provider (default). Add OPENAI_API_KEY as a secret.
+          # OPENAI_BASE_URL / OPENAI_MODEL fall back to code defaults
+          # (https://api.avalai.ir/v1, gpt-4o-mini) when the repo variables are unset.
+          LLM_PROVIDER: openai
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          # Only used if you switch LLM_PROVIDER back to "anthropic".
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
         run: python -m omatekk --once

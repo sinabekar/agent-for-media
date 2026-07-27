@@ -97,7 +97,7 @@ def run(cfg: Config | None = None, *, dry_run: bool = False) -> dict:
     """Run one full pipeline cycle. Returns a summary dict."""
     cfg = cfg or Config()
     log.info("config: %s", cfg.summary())
-    llm = LLM()
+    llm = LLM(cfg)
     history = History(cfg.state_dir, cfg.history_days)
 
     # 1. collect

@@ -92,10 +92,16 @@ the Omatekk / GCC startup beat, so a bare run works with just an API key.
 
 Highlights:
 
-- `WRITER_MODEL` (default `claude-opus-5`) — the model that writes the
-  deliverables. Switch to `claude-sonnet-5` to cut cost.
-- `ANALYSIS_MODEL` (default `claude-haiku-4-5`) — cheap ranking / SEO work.
+- `LLM_PROVIDER` (default `openai`) — `openai` uses any OpenAI-compatible
+  endpoint (OpenAI, OpenRouter, avalai.ir…) via `OPENAI_API_KEY` +
+  `OPENAI_BASE_URL` (default `https://api.avalai.ir/v1`) + `OPENAI_MODEL`
+  (default `gpt-4o-mini`). `anthropic` uses the native Claude API via
+  `ANTHROPIC_API_KEY`.
+- `WRITER_MODEL` (default `claude-opus-5`) / `ANALYSIS_MODEL`
+  (default `claude-haiku-4-5`) — used in `anthropic` mode. In `openai` mode a
+  single `OPENAI_MODEL` serves both roles.
 - `ENABLE_RESEARCH` (default `true`) — web-search grounding before writing.
+  **Only available in `anthropic` mode**; automatically disabled for `openai`.
 - `SOURCE_*` toggles, `GN_QUERIES`, `EXTRA_FEEDS`, `REDDIT_SUBREDDITS`,
   `HN_QUERIES` — tune what gets collected.
 - `HISTORY_DAYS` (default `14`) — how long before a topic can recur.
