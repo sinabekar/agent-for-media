@@ -111,7 +111,9 @@ class Config:
     #               avalai.ir, etc.) via OPENAI_API_KEY + OPENAI_BASE_URL.
     llm_provider: str = field(default_factory=lambda: _get("LLM_PROVIDER", "openai").lower())
     openai_api_key: str = field(default_factory=lambda: _get("OPENAI_API_KEY", ""))
-    openai_base_url: str = field(default_factory=lambda: _get("OPENAI_BASE_URL", "https://api.avalai.ir/v1"))
+    # Default = official OpenAI endpoint. For an OpenAI-compatible proxy (e.g.
+    # avalai.ir), set OPENAI_BASE_URL=https://api.avalai.ir/v1 as a repo Variable.
+    openai_base_url: str = field(default_factory=lambda: _get("OPENAI_BASE_URL", "https://api.openai.com/v1"))
     openai_model: str = field(default_factory=lambda: _get("OPENAI_MODEL", "gpt-4o-mini"))
 
     # --- Models (used as-is in anthropic mode; overridden in openai mode) --
